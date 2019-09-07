@@ -1,0 +1,21 @@
+.search-up-illustration {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  .illustration {
+    background: url("../../../../resources/to-the-moon.svg");
+    width: 240px;
+    height: 180px;
+    background-size: cover;
+  }
+
+  .label {
+    font-size: .9rem;
+    margin: 1rem 0;
+    font-weight: 300;
+  }
+}

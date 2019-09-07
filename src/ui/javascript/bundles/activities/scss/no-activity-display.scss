@@ -1,0 +1,23 @@
+.no-activity-display {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.8);
+  border-radius: 13px;
+  min-height: 50vh;
+  margin-top: 2rem;
+  flex-direction: column;
+
+  .illustration {
+    width: 305px;
+    height: 210px;
+    background: url(../../../../resources/light-the-fire.svg);
+    background-size: cover;
+  }
+  .label {
+    font-weight: 300;
+    font-size: .9rem;
+    margin-top: 1rem;
+  }
+}
