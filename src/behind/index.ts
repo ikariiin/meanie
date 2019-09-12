@@ -6,14 +6,23 @@ import {createConnection} from "typeorm";
 import {Torrent} from "./modules/torrent";
 import "reflect-metadata";
 import {Cron} from "./modules/cron";
-import {FeedManagementRouter} from "./modules/feed-management";
+import {install} from "./install";
 
+// MiddleWare imports
 import {setDB} from "./middlewares/db";
 import {apiMiddleWare} from "./middlewares/api";
+import {setCron} from "./middlewares/cron";
+import {setTorrent} from "./middlewares/torrent";
 
 // Entities
 import {Feed} from "./entitiy/feed";
+import {Downloads} from "./entitiy/downloads";
+import {Settings} from "./entitiy/settings";
+
+// Routers
 import {SearchRouter} from "./modules/search";
+import {FeedManagementRouter} from "./modules/feed-management";
+import {AnitomyRouter} from "./modules/anitomy";
 
 const app = express();
 ExpressWS(app);
@@ -26,19 +35,26 @@ async function initializeApp() {
     database: "meanie",
     synchronize: true,
     entities: [
-      Feed
-    ]
+      Feed,
+      Downloads,
+      Settings
+    ],
+    useNewUrlParser: true,
   });
+
+  // Install
+  await install(connection);
 
   const torrent = new Torrent(connection);
   const cron = new Cron(connection);
-
   cron.start();
 
   // MiddleWares
   app.use(setDB(connection));
+  app.use(setTorrent(torrent));
   app.use(apiMiddleWare);
   app.use(express.json());
+  app.use(setCron(cron));
 
   // WebSocket endpoint
   // @ts-ignore
@@ -50,6 +66,7 @@ async function initializeApp() {
   // Routers
   app.use("/feeds", FeedManagementRouter);
   app.use("/search", SearchRouter);
+  app.use("/anitomy", AnitomyRouter);
 
   const server = app.listen(9090, () => console.log("Ctrl + C to stop the server"));
 }

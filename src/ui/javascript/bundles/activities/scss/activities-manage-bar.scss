@@ -1,0 +1,27 @@
+.activities-manage-bar {
+  margin: .5rem 0 1rem 0;
+  background: rgba(255,255,255,.02);
+  padding: 1rem 1.5rem;
+  font-size: .85rem;
+  border-radius: 4px;
+
+  .section-title {
+    margin: .3rem 0;
+    font-size: .9rem;
+    font-weight: 500;
+    display: flex;
+
+    .space {  flex-grow: 1 }
+    .hide-link {
+      cursor: pointer;
+      color: #fbad39;
+      margin-left: .4rem;
+      font-size: .95rem;
+    }
+  }
+  .tools {
+    margin-top: .5rem;
+    display: flex;
+    width: 100%;
+  }
+}

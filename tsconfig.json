@@ -7,7 +7,8 @@
     "outDir": "./dist",
     "jsx": "react",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*"

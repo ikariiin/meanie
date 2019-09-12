@@ -4,4 +4,12 @@
   font-size: 3.2rem;
   margin: 0 1.1rem;
   //border-bottom: 8px solid #EDEDED;
+  display: flex;
+
+  .space {
+    flex-grow: 1;
+  }
+
+  .secondary {
+  }
 }

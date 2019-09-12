@@ -1,0 +1,21 @@
+.settings {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: calc(100vw - 3.5rem);
+  height: calc(100vh - 3.5rem);
+  padding: 1.75rem;
+  background: #151515;
+  z-index: 3;
+
+  .settings-panels {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    .settings-input {
+      width: 250px;
+    }
+  }
+}

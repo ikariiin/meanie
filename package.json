@@ -6,6 +6,9 @@
   "dependencies": {
     "@material-ui/core": "^4.3.2",
     "@material-ui/icons": "^4.2.1",
+    "@material-ui/lab": "^4.0.0-alpha.26",
+    "anitomyscript": "^2.0.2",
+    "deep-diff": "^1.0.2",
     "moment": "^2.24.0",
     "mongodb": "^3.3.2",
     "node-fetch": "^2.6.0",
@@ -15,9 +18,11 @@
     "typeorm": "^0.2.18",
     "uuid": "^3.3.3",
     "webtorrent": "^0.107.6",
+    "windows-drive-letters": "^4.0.0",
     "xml2js": "^0.4.22"
   },
   "devDependencies": {
+    "@types/deep-diff": "^1.0.0",
     "@types/express": "^4.17.1",
     "@types/express-ws": "^3.0.0",
     "@types/node": "^12.7.1",

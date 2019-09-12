@@ -31,9 +31,14 @@ export class Search {
     }));
   }
 
-  public async process(): Promise<ISearchResult> {
+  /**
+   * Requests a RSS Feed from nyaa.si
+   * @param url
+   * If provided it will use the same to request nyaa
+   */
+  public async process(url?: string): Promise<ISearchResult> {
     const response = await fetch(
-      Search.SEARCH_URI.replace("%term%", this.term)
+      url ? url : Search.SEARCH_URI.replace("%term%", this.term)
     );
     const xmlData = await response.text();
     const parsedList = await parseStringPromise(xmlData);
