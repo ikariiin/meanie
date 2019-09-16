@@ -5,6 +5,7 @@
   display: grid;
   grid-template-columns: .7fr 5fr 8fr 3fr .5fr;
   cursor: pointer;
+  margin: .4rem 0;
 
   .title {
     font-size: .9rem;
@@ -48,7 +49,6 @@
   }
   .progress-container {
     .section-label {
-      margin-bottom: .5rem;
     }
   }
 
@@ -72,6 +72,11 @@
     transition: 50ms all ease-out;
     margin: 0 .75rem;
     cursor: pointer;
+  }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &:hover .drop-down-button {

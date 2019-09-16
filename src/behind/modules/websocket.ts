@@ -1,4 +1,6 @@
 import * as WebSocket from "ws";
+import {ITorrent, Torrent} from "./torrent";
+import {Connection} from "typeorm";
 
 export enum WebSocketState {
   OPEN,
@@ -10,15 +12,27 @@ export interface ISingleRequest {
   type: "SingleRequest"
 }
 export interface ISubscription {
-  type: "Subscription"
+  type: "Subscription",
+  for: "torrents"|string;
+  uuid: string;
+}
+
+export interface TorrentsWatchResponse {
+  torrents: Array<ITorrent>,
+  uuid: string;
 }
 
 export class WebSocketHandler {
   private websocket: WebSocket;
   private state: WebSocketState = WebSocketState.NOT_STARTED;
+  private torrent: Torrent;
+  private dbConnection: Connection;
+  private timeouts: Array<NodeJS.Timeout> = [];
 
-  constructor(ws: WebSocket) {
+  constructor(ws: WebSocket, torrent: Torrent, db: Connection) {
     this.websocket = ws;
+    this.torrent = torrent;
+    this.dbConnection = db;
   }
 
   private closeWebSocket(): void {
@@ -30,8 +44,23 @@ export class WebSocketHandler {
     //
   }
 
+  private shutOffTimeouts(): void {
+    this.timeouts.forEach(timeout => clearInterval(timeout));
+  }
+
   private initializeSubscription(subscriptionDetails: ISubscription): void {
-    //
+    if(subscriptionDetails.for === "torrents") {
+      this.timeouts.push(this.torrent.watchAll((torrents) => {
+        if(this.websocket.readyState === this.websocket.CLOSED) {
+          this.shutOffTimeouts(); return;
+        }
+
+        this.websocket.send(JSON.stringify({
+          torrents,
+          uuid: subscriptionDetails.uuid
+        }))
+      }));
+    }
   }
 
   private handleNewMessage(message: WebSocket.Data): void {

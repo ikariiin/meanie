@@ -14,6 +14,10 @@
     align-items: center;
     flex-direction: column;
 
+    .button-container {
+      text-align: right;
+    }
+
     .settings-input {
       width: 250px;
     }

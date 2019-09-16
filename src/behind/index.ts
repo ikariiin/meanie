@@ -3,7 +3,7 @@ import * as ExpressWS from 'express-ws';
 import * as WebSocket from "ws";
 import { WebSocketHandler } from "./modules/websocket";
 import {createConnection} from "typeorm";
-import {Torrent} from "./modules/torrent";
+import {Torrent, TorrentRouter} from "./modules/torrent";
 import "reflect-metadata";
 import {Cron} from "./modules/cron";
 import {install} from "./install";
@@ -23,6 +23,7 @@ import {Settings} from "./entitiy/settings";
 import {SearchRouter} from "./modules/search";
 import {FeedManagementRouter} from "./modules/feed-management";
 import {AnitomyRouter} from "./modules/anitomy";
+import {SettingsRouter} from "./modules/settings";
 
 const app = express();
 ExpressWS(app);
@@ -59,7 +60,7 @@ async function initializeApp() {
   // WebSocket endpoint
   // @ts-ignore
   app.ws("/websocket", (ws: WebSocket, request: express.Request) => {
-    const websocketHandler = new WebSocketHandler(ws);
+    const websocketHandler = new WebSocketHandler(ws, request.torrent, request.db);
     websocketHandler.attachHandlers();
   });
 
@@ -67,6 +68,8 @@ async function initializeApp() {
   app.use("/feeds", FeedManagementRouter);
   app.use("/search", SearchRouter);
   app.use("/anitomy", AnitomyRouter);
+  app.use("/settings", SettingsRouter);
+  app.use("/torrents", TorrentRouter);
 
   const server = app.listen(9090, () => console.log("Ctrl + C to stop the server"));
 }

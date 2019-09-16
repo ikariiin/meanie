@@ -4,6 +4,8 @@ import {Title} from "../../common/components/title";
 import {SettingsClose} from "./settings-close";
 import {GeneralPanel} from "./panels/general";
 import {FilesPanel} from "./panels/files";
+import {Button} from "@material-ui/core";
+import SaveIcon from "@material-ui/icons/Save";
 
 export interface SettingsProps {
   close: () => void;
@@ -21,6 +23,11 @@ export class Settings extends React.Component<SettingsProps> {
         <section className="settings-panels">
           <GeneralPanel />
           <FilesPanel />
+          <section className="button-container">
+            <Button variant="contained" color="primary" size="large" className="save-button">
+              <SaveIcon style={{ marginRight: '.5rem' }} /> Save
+            </Button>
+          </section>
         </section>
       </section>
     );

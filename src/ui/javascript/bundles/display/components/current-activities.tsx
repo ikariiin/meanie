@@ -6,21 +6,20 @@ import {computed, observable} from "mobx";
 import {Activity} from "../../activities/components/activity";
 import SettingsIcon from "@material-ui/icons/Settings";
 import {WebSocketClient} from "../utils/websocket-client";
-import {IActivity} from "../../../../../behind/modules/torrent";
 import {Button} from "@material-ui/core";
 import {ActivitiesManageBar, SortParams} from "../../activities/components/activities-manage-bar";
+import {ITorrent_Transportable} from "../../../../../behind/modules/torrent";
+import {observer} from "mobx-react";
 
 export interface CurrentActivitiesProps {
   toggleSettingsDisplay: () => void
 }
 
+@observer
 export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
   private websocket!: WebSocketClient;
 
-  @observable private activities: Array<IActivity> = [{
-    title: "[HorribleSubs] Kimetsu no Yaiba - 22 [720p]",
-    dir: "E:\\TV Series\\Kimetsu no Yaiba"
-  }];
+  @observable private torrents: Array<ITorrent_Transportable> = [];
   @observable sortBy: SortParams = SortParams.Title;
   @observable search: string = "";
 
@@ -29,21 +28,26 @@ export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
     this.subscribe();
   }
 
+  private handleTorrentsMutation(mutation: any) {
+    console.log(mutation);
+    this.torrents = mutation.torrents;
+  }
+
   private subscribe(): void {
     if(!this.websocket) return;
 
     this.websocket.addOpenHandler(() => {
-      this.websocket.subscribe("activity");
+      this.websocket.subscribe("activity", (newData: any) => this.handleTorrentsMutation(newData));
     });
   }
 
   @computed public get activitiesRender(): React.ReactNode {
-    if(this.activities.length === 0) return <NoActivityDisplay />;
+    if(this.torrents.length === 0) return <NoActivityDisplay />;
 
     return (
       <section className="activities">
         <ActivitiesManageBar onSearch={search => this.search = search} onSortChange={sortBy => this.sortBy = sortBy} />
-        {this.activities.map(activity => (
+        {this.torrents.map(activity => (
           <Activity {...activity} />
         ))}
       </section>
