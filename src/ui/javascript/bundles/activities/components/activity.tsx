@@ -2,19 +2,29 @@ import * as React from "react";
 import "../scss/activity.scss"
 import {green} from "@material-ui/core/colors";
 import DownloadIcon from "@material-ui/icons/CloudDownload";
-import {IconButton, LinearProgress, Tooltip} from "@material-ui/core";
+import {
+  Button,
+  IconButton,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemText, Paper,
+  Tooltip
+} from "@material-ui/core";
 import DropDownArrowIcon from "@material-ui/icons/ExpandMore";
-import {ITorrent_Transportable} from "../../../../../behind/modules/torrent";
+import {File, ITorrent_Transportable} from "../../../../../behind/modules/torrent";
 import {observer} from "mobx-react";
-import {action, observable} from "mobx";
+import {action, computed, observable} from "mobx";
 import {parseAnimeTitle} from "../util/anitomy.api";
 import {AnitomyParsedTitle} from "../../../../../behind/modules/anitomy";
 import {Skeleton} from "@material-ui/lab";
 import {duration} from "moment";
+import {humanFileSize, shorten} from "../util/lengths";
 
 @observer
 export class Activity extends React.Component<ITorrent_Transportable> {
   @observable private parsedName: null|AnitomyParsedTitle = null;
+  @observable protected expanded: boolean = false;
 
   @action public async parseTitle(): Promise<void> {
     this.parsedName = await parseAnimeTitle(this.props.title);
@@ -24,9 +34,51 @@ export class Activity extends React.Component<ITorrent_Transportable> {
     this.parseTitle();
   }
 
-  public render() {
+  @computed private get renderTimeLeft() {
+    if(this.props.webTorrent.done) return "Done";
+
+    return duration(this.props.webTorrent.timeRemaining).humanize();
+  }
+
+  private toggleExpansion(): void {
+    this.expanded = !this.expanded;
+  }
+
+  private renderTitle(blocky: boolean = false) {
     return (
-      <section className="activity">
+      <div className="title">
+        {
+          blocky ? (
+            <section className="block-title">
+              {this.parsedName ? this.parsedName.anime_title : <Skeleton height={15} width="100%" variant="rect" />}
+            </section>
+          )
+          :(
+            this.parsedName ? this.parsedName.anime_title : <Skeleton height={15} width="100%" variant="rect" />
+          )
+        }
+        {this.parsedName && this.parsedName.release_group && (
+          <div className="tag">
+            {this.parsedName.release_group}
+          </div>
+        )}
+        {this.parsedName && this.parsedName.video_resolution && (
+          <>
+            <div className="tag">
+              {this.parsedName.video_resolution}
+            </div>
+            <div className="tag">
+              Ep {this.parsedName.episode_number}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  private get inlineActivity() {
+    return (
+      <>
         <div className="status-icon" style={{ background: green["A400"] }}>
           <DownloadIcon style={{ fontSize: "inherit" }} />
         </div>
@@ -35,19 +87,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
             Name
           </div>
           <Tooltip title={this.props.title} placement="bottom-start">
-            <div className="title">
-              {this.parsedName ? this.parsedName.anime_title : <Skeleton height={15} width="100%" variant="rect" />}
-              {this.parsedName && this.parsedName.video_resolution && (
-                <div className="tag">
-                  {this.parsedName.video_resolution}
-                </div>
-              )}
-              {this.parsedName && this.parsedName.release_group && (
-                <div className="tag">
-                  {this.parsedName.release_group}
-                </div>
-              )}
-            </div>
+            {this.renderTitle()}
           </Tooltip>
         </div>
         <section className="container progress-container">
@@ -62,7 +102,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
           </div>
           <time>
             {/*<Skeleton height={15} width={150} variant="rect" />*/}
-            {duration(this.props.webTorrent.timeRemaining).humanize()}
+            {this.props.webTorrent.done ? 'Transfer Complete!' : `Time left: ${this.renderTimeLeft}`}
           </time>
         </section>
         <div className="btn">
@@ -70,6 +110,88 @@ export class Activity extends React.Component<ITorrent_Transportable> {
             <DropDownArrowIcon />
           </IconButton>
         </div>
+      </>
+    );
+  }
+
+  private renderFileListSecondary(file: File) {
+    return (
+      <>
+        <section className="info">
+          Size: {humanFileSize(file.size, true)}
+        </section>
+        <section className="file-progress">
+          <span className="percentage">{(file.progress * 100).toFixed(1)}%</span>
+          <LinearProgress className="progress-l" value={file.progress * 100} variant="determinate" color="secondary" />
+        </section>
+      </>
+    )
+  }
+
+  private get expandedActivity() {
+    return (
+      <>
+        {this.renderTitle(true)}
+        <section className="progress-field">
+          <div className="progress-container">
+            <div className="complete-percentage">{(this.props.webTorrent.progress * 100).toFixed(1)}%</div>
+            <LinearProgress className="progress" variant="determinate" value={this.props.webTorrent.progress * 100} color="primary" />
+            <section className="download-speed">
+              {humanFileSize(this.props.webTorrent.downloadSpeed, true)}/s
+            </section>
+            <time>
+              {this.props.webTorrent.done ? 'Transfer Complete!' : `Time left: ${this.renderTimeLeft}`}
+            </time>
+          </div>
+        </section>
+        <section className="announce-and-files">
+          <List dense className="list" component={Paper}>
+            <section className="list-header">
+              Announces
+            </section>
+            {this.props.webTorrent.announce.slice(0, 5).map(announce => (
+              <ListItem>
+                <ListItemText>{announce}</ListItemText>
+              </ListItem>
+            ))}
+            {this.props.webTorrent.announce.length > 5 && (
+              <ListItem dense component={Button} onClick={(ev: any) => ev.stopPropagation()}>
+                And {this.props.webTorrent.announce.length - 6} more hidden
+              </ListItem>
+            )}
+          </List>
+          <List dense className="list" component={Paper}>
+            <section className="list-header">
+              Files
+            </section>
+            {this.props.webTorrent.files.slice(0, 3).map(file => (
+              <ListItem>
+                <ListItemText secondary={this.renderFileListSecondary(file)}>
+                  {shorten(file.name, 45)}
+                </ListItemText>
+              </ListItem>
+            ))}
+            {this.props.webTorrent.files.length > 3 && (
+              <ListItem dense component={Button} onClick={(ev: any) => ev.stopPropagation()}>
+                And {this.props.webTorrent.files.length - 4} more hidden
+              </ListItem>
+            )}
+          </List>
+        </section>
+      </>
+    )
+  }
+
+  @computed private get conditionalExpansionRender(): any {
+    if(!this.expanded) return this.inlineActivity;
+
+    return this.expandedActivity;
+  }
+
+  public render() {
+    return (
+      <section className={`activity ${this.expanded ? 'expanded' : ''}`} onClick={() => this.toggleExpansion()}>
+        {this.conditionalExpansionRender}
       </section>
     )
   }

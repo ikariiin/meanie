@@ -12,6 +12,14 @@ export interface ITorrent {
   details: FeedResult;
 }
 
+export interface File {
+  name: string;
+  torrentPath: string;
+  size: number;
+  downloaded: number;
+  progress: number;
+};
+
 export interface ITorrent_Transportable {
   title: string;
   dir: string;
@@ -26,6 +34,7 @@ export interface ITorrent_Transportable {
     numPeers: number;
     done: boolean;
     created: Date;
+    files: Array<File>
   };
   details: FeedResult;
 }
@@ -82,7 +91,15 @@ export class Torrent {
             infoHash: webTorrent.infoHash,
             numPeers: webTorrent.numPeers,
             progress: webTorrent.progress,
-            timeRemaining: webTorrent.timeRemaining
+            timeRemaining: webTorrent.timeRemaining,
+            files: webTorrent.files.map(file => ({
+              name: file.name,
+              downloaded: file.downloaded,
+              size: file.length,
+              torrentPath: file.path,
+              // @ts-ignore
+              progress: file.progress
+            }))
           }
         }
       }));

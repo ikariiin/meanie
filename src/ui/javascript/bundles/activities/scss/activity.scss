@@ -6,6 +6,113 @@
   grid-template-columns: .7fr 5fr 8fr 3fr .5fr;
   cursor: pointer;
   margin: .4rem 0;
+  transition: 150ms all ease;
+  height: auto;
+
+  &.expanded {
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    padding: 1rem 1.5rem;
+    margin: .4rem 0;
+    display: block;
+    cursor: default;
+
+    .title {
+      font-weight: 900;
+      font-size: 2rem;
+
+      .block-title {
+        flex-grow: 1;
+      }
+
+      .tag {
+        background: rgba(255,255,255,.9);
+        border-radius: 4px;
+        padding: .2rem;
+        color: #121212;
+        font-size: .8rem;
+        font-weight: 400;
+        margin-left: .5rem;
+      }
+    }
+
+    .progress-field {
+      margin: .4rem 0;
+
+      .section-label {
+        font-size: .95rem;
+        font-weight: 500;
+      }
+      .progress-container {
+        display: flex;
+        align-items: center;
+        margin-top: .4rem;
+
+        .progress {
+          flex-grow: 1;
+        }
+        .complete-percentage {
+          margin-right: 1rem;
+          font-weight: 700;
+          font-size: .9rem;
+          width: 4vw;
+          text-align: center;
+          color: rgba(255,255,255,.8);
+        }
+        .download-speed {
+          font-size: .9rem;
+          color: rgba(230,230,252, .9);
+          font-weight: 500;
+          margin-left: .67rem;
+          width: 4vw;
+          text-align: center;
+        }
+        time {
+          text-transform: capitalize;
+          margin-left: 1rem;
+          font-weight: 700;
+          font-size: .9rem;
+          color: rgba(255,255,255,.6);
+          width: 8vw;
+          text-align: center;
+        }
+      }
+    }
+
+    .announce-and-files {
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr;
+
+      .list {
+        background: rgba(255,255,255,.1);
+        margin: .5rem;
+
+        .list-header {
+          font-weight: 700;
+          font-size: .9rem;
+          color: #FFFFFF;
+          margin: .2rem 16px;
+          letter-spacing: 1px;
+        }
+
+        .file-progress {
+          display: flex;
+          align-items: center;
+
+          .percentage {
+            font-size: .8rem;
+            margin-right: .4rem;
+            width: 40px;
+            color: rgba(255,255,255,.4);
+            text-align: center;
+          }
+          .progress-l {
+            flex-grow: 1;
+          }
+        }
+      }
+    }
+  }
 
   .title {
     font-size: .9rem;
@@ -56,6 +163,7 @@
     time {
       font-size: .9rem;
       font-weight: 700;
+      text-transform: capitalize;
     }
   }
 
@@ -83,3 +191,4 @@
     opacity: 1;
   }
 }
+
