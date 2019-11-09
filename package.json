@@ -58,7 +58,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --content-base src --hot --inline --open"
+    "start": "webpack-dev-server --content-base src --hot --inline --open",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",

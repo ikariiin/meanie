@@ -23,6 +23,11 @@
 
       .block-title {
         flex-grow: 1;
+        display: flex;
+
+        .status-icon {
+          margin-right: .5rem;
+        }
       }
 
       .tag {
@@ -37,7 +42,7 @@
     }
 
     .progress-field {
-      margin: .4rem 0;
+      margin: 1.5rem 0;
 
       .section-label {
         font-size: .95rem;
@@ -111,6 +116,20 @@
           }
         }
       }
+
+      video {
+        height: auto;
+        width: 100%;
+        margin: .4rem;
+        border-radius: 4px;
+        outline: none;
+      }
+    }
+
+    .controls-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
     }
   }
 

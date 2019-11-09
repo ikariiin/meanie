@@ -45,4 +45,10 @@ A context page for settings for the application, for viewing and editing.
 
 Feel free to create a pull request or an issue!
 
+Currently the video profile only works in chrome due to MIME limitations on firefox.
+
 ## Screenshots WIP
+![](https://i.imgur.com/VQwoMAg.png)
+![](https://i.imgur.com/LdKp2RT.png)
+![](https://i.imgur.com/KzwuM67.png)
+![](https://i.imgur.com/hqcryXP.png)

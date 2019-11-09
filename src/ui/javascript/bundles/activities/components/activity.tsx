@@ -9,7 +9,7 @@ import {
   List,
   ListItem,
   ListItemText, Paper,
-  Tooltip
+  Tooltip, Typography
 } from "@material-ui/core";
 import DropDownArrowIcon from "@material-ui/icons/ExpandMore";
 import {File, ITorrent_Transportable} from "../../../../../behind/modules/torrent";
@@ -20,11 +20,13 @@ import {AnitomyParsedTitle} from "../../../../../behind/modules/anitomy";
 import {Skeleton} from "@material-ui/lab";
 import {duration} from "moment";
 import {humanFileSize, shorten} from "../util/lengths";
+import {serveFile} from "../../display/utils/torrent.api";
 
 @observer
 export class Activity extends React.Component<ITorrent_Transportable> {
   @observable private parsedName: null|AnitomyParsedTitle = null;
   @observable protected expanded: boolean = false;
+  @observable private videoURI: string|null = null;
 
   @action public async parseTitle(): Promise<void> {
     this.parsedName = await parseAnimeTitle(this.props.title);
@@ -50,6 +52,9 @@ export class Activity extends React.Component<ITorrent_Transportable> {
         {
           blocky ? (
             <section className="block-title">
+              <div className="status-icon" style={{ background: green["A400"] }}>
+                <DownloadIcon style={{ fontSize: "inherit" }} />
+              </div>
               {this.parsedName ? this.parsedName.anime_title : <Skeleton height={15} width="100%" variant="rect" />}
             </section>
           )
@@ -114,6 +119,11 @@ export class Activity extends React.Component<ITorrent_Transportable> {
     );
   }
 
+  private async serveFile(index: number): Promise<void> {
+    const uri = await serveFile(this.props.webTorrent.infoHash, index);
+    this.videoURI = uri.uri;
+  }
+
   private renderFileListSecondary(file: File) {
     return (
       <>
@@ -144,19 +154,19 @@ export class Activity extends React.Component<ITorrent_Transportable> {
             </time>
           </div>
         </section>
-        <section className="announce-and-files">
+        <section className="announce-and-files" onClick={event => event.stopPropagation()}>
           <List dense className="list" component={Paper}>
             <section className="list-header">
               Announces
             </section>
-            {this.props.webTorrent.announce.slice(0, 5).map(announce => (
+            {this.props.webTorrent.announce.slice(0, 7).map(announce => (
               <ListItem>
                 <ListItemText>{announce}</ListItemText>
               </ListItem>
             ))}
-            {this.props.webTorrent.announce.length > 5 && (
-              <ListItem dense component={Button} onClick={(ev: any) => ev.stopPropagation()}>
-                And {this.props.webTorrent.announce.length - 6} more hidden
+            {this.props.webTorrent.announce.length > 7 && (
+              <ListItem dense button onClick={(ev: any) => ev.stopPropagation()}>
+                <Typography variant="body2">And {this.props.webTorrent.announce.length - 8} more hidden</Typography>
               </ListItem>
             )}
           </List>
@@ -164,19 +174,37 @@ export class Activity extends React.Component<ITorrent_Transportable> {
             <section className="list-header">
               Files
             </section>
-            {this.props.webTorrent.files.slice(0, 3).map(file => (
-              <ListItem>
+            {this.props.webTorrent.files.slice(0, 3).map((file, index) => (
+              <ListItem button onClick={() => this.serveFile(index)}>
                 <ListItemText secondary={this.renderFileListSecondary(file)}>
                   {shorten(file.name, 45)}
                 </ListItemText>
               </ListItem>
             ))}
             {this.props.webTorrent.files.length > 3 && (
-              <ListItem dense component={Button} onClick={(ev: any) => ev.stopPropagation()}>
-                And {this.props.webTorrent.files.length - 4} more hidden
+              <ListItem dense button onClick={(ev: any) => ev.stopPropagation()}>
+                <Typography variant="body2">And {this.props.webTorrent.files.length - 4} more hidden</Typography>
               </ListItem>
             )}
           </List>
+          {this.videoURI && (
+            <video controls>
+              <source src={this.videoURI} type="video/webm" />
+            </video>
+          )}
+        </section>
+        <section className="controls-container">
+          {this.videoURI && (
+            <Button color="default">
+              Close Preview
+            </Button>
+          )}
+          <Button color="default">
+            Cancel Download
+          </Button>
+          <Button color="secondary">
+            Pause
+          </Button>
         </section>
       </>
     )

@@ -8,5 +8,10 @@ export async function submitTorrent(torrent: FeedResult) {
     body: JSON.stringify(torrent, null, 2)
   });
 
-  console.log(await response.json());
+  return response.json();
+}
+
+export async function serveFile(infoHash: string, index: number) {
+  const response = await fetch(`${HOST}/torrents/view/${infoHash}/${index}`, API_HEADERS);
+  return response.json();
 }
