@@ -7,7 +7,8 @@ const SettingsRouter = express.Router();
 SettingsRouter.get("/:module.:field", async (req: express.Request, res: express.Response) => {
   const { module, field } = req.params;
   const dbConnection = req.db;
-  const values = await dbConnection.mongoManager.find(Settings, { name: `${module}.${field}` });
+  const settingsRepository = await dbConnection.getRepository(Settings);
+  const values = await settingsRepository.find({ name: `${module}.${field}` });
 
   formatAPIResponse(res, values[0]);
 });

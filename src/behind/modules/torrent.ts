@@ -66,7 +66,8 @@ export class Torrent {
   }
 
   public async submit(newTorrent: FeedResult) {
-    const savePath = (await this.dbConn.mongoManager.find(Settings, { name: "fs.savePath" }))[0].value;
+    const settingsRepository = await this.dbConn.getRepository(Settings);
+    const savePath = (await settingsRepository.find({ name: "fs.savePath" }))[0].value;
     this.client.add(newTorrent.torrentLink, { path: savePath }, (torrent) => this.torrents.push({
       webTorrent: torrent,
       details: newTorrent,

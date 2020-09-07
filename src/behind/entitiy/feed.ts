@@ -1,4 +1,4 @@
-import {Column, Entity, ObjectID, ObjectIdColumn} from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 export interface IFeed {
   url: string;
@@ -6,8 +6,8 @@ export interface IFeed {
 
 @Entity()
 export class Feed {
-  @ObjectIdColumn()
-  public id!: ObjectID;
+  @PrimaryGeneratedColumn()
+  public id!: number;
 
   @Column()
   public url!: string;

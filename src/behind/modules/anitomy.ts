@@ -1,5 +1,5 @@
 import * as express from "express";
-import {formatAPIResponse} from "../util/response-formatter";
+import { formatAPIResponse } from "../util/response-formatter";
 const anitomy = require("anitomyscript");
 
 const AnitomyRouter = express.Router();

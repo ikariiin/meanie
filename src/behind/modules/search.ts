@@ -1,8 +1,8 @@
 import * as express from "express";
 import fetch from "node-fetch";
-import {formatAPIResponse} from "../util/response-formatter";
+import { formatAPIResponse } from "../util/response-formatter";
 import { parseStringPromise } from "xml2js";
-import {FeedResult} from "../../ui/javascript/bundles/display/components/result-box";
+import { FeedResult } from "../../ui/javascript/bundles/display/components/result-box";
 
 export interface ISearchResult {
   list: Array<FeedResult>,

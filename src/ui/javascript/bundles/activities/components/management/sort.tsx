@@ -23,7 +23,7 @@ export const Sort: React.FunctionComponent<SortProps> = ({onChange, activeParam}
         value={activeParam}
         onChange={(parameter) => onChange(parameter.target.value)}
       >
-        {Object.values(SortParams).filter(param => typeof param === "string").map(parameter => (
+        {Object.values(SortParams).filter(param => typeof param === "string").map((parameter: any) => (
           <MenuItem value={SortParams[parameter]}>{parameter}</MenuItem>
         ))}
       </Select>

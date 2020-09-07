@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {sendImproperRequestError} from "../util/generic-response";
+import { sendImproperRequestError } from "../util/generic-response";
 
 const FeedManagementRouter = express.Router();
 

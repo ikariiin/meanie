@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const applicationConfig = require('./config.json');
 
 module.exports = {
   entry: [path.join(path.resolve(__dirname, 'src/ui/javascript'), 'mounter.tsx')],
@@ -61,5 +62,5 @@ module.exports = {
   devServer: {
     historyApiFallback: true,
   },
-  mode: "production"
+  mode: applicationConfig["MODE"]
 };

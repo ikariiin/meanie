@@ -1,9 +1,9 @@
-import {Column, Entity, ObjectID, ObjectIdColumn} from "typeorm";
+import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class Settings {
-  @ObjectIdColumn()
-  public id!: ObjectID;
+  @PrimaryGeneratedColumn()
+  public id!: number;
 
   @Column()
   name!: string;

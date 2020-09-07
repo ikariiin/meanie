@@ -1,29 +1,33 @@
+import "reflect-metadata";
 import * as express from 'express';
 import * as ExpressWS from 'express-ws';
 import * as WebSocket from "ws";
 import { WebSocketHandler } from "./modules/websocket";
-import {createConnection} from "typeorm";
-import {Torrent, TorrentRouter} from "./modules/torrent";
-import "reflect-metadata";
+import { createConnection } from "typeorm";
+import { Torrent, TorrentRouter } from "./modules/torrent";
 import {Cron} from "./modules/cron";
-import {install} from "./install";
+import { install } from "./install";
 
 // MiddleWare imports
-import {setDB} from "./middlewares/db";
-import {apiMiddleWare} from "./middlewares/api";
-import {setCron} from "./middlewares/cron";
-import {setTorrent} from "./middlewares/torrent";
+import { setDB } from "./middlewares/db";
+import { apiMiddleWare } from "./middlewares/api";
+import { setCron } from "./middlewares/cron";
+import { setTorrent } from "./middlewares/torrent";
 
 // Entities
-import {Feed} from "./entitiy/feed";
-import {Downloads} from "./entitiy/downloads";
-import {Settings} from "./entitiy/settings";
+import { Feed } from "./entitiy/feed";
+import { Downloads } from "./entitiy/downloads";
+import { Settings } from "./entitiy/settings";
 
 // Routers
-import {SearchRouter} from "./modules/search";
-import {FeedManagementRouter} from "./modules/feed-management";
-import {AnitomyRouter} from "./modules/anitomy";
-import {SettingsRouter} from "./modules/settings";
+import { SearchRouter } from "./modules/search";
+import { FeedManagementRouter } from "./modules/feed-management";
+import { AnitomyRouter } from "./modules/anitomy";
+import { SettingsRouter } from "./modules/settings";
+
+// App config
+import * as applicationConfig from '../../config.json';
+import { DownloadDetails } from "./entitiy/download-details";
 
 const app = express();
 ExpressWS(app);
@@ -31,16 +35,15 @@ ExpressWS(app);
 // Create a DB connection
 async function initializeApp() {
   const connection = await createConnection({
-    type: "mongodb",
-    host: "localhost",
-    database: "meanie",
+    type: "sqlite",
+    database: applicationConfig.DB_PATH,
     synchronize: true,
     entities: [
       Feed,
       Downloads,
-      Settings
-    ],
-    useNewUrlParser: true,
+      Settings,
+      DownloadDetails
+    ]
   });
 
   // Install

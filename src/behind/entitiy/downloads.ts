@@ -1,16 +1,17 @@
-import {Column, Entity, ObjectID, ObjectIdColumn} from "typeorm";
-import {FeedResult} from "../../ui/javascript/bundles/display/components/result-box";
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn } from "typeorm";
+import { DownloadDetails } from "./download-details";
 
 @Entity()
 export class Downloads {
-  @ObjectIdColumn()
-  public id!: ObjectID;
+  @PrimaryGeneratedColumn()
+  public id!: number;
 
   @Column()
   public feedURL!: string;
 
-  @Column()
-  public details!: FeedResult;
+  @OneToOne(type => DownloadDetails, { onDelete: "CASCADE", cascade: true })
+  @JoinColumn()
+  public details!: DownloadDetails;
 
   @Column()
   public fsLink!: string;

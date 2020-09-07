@@ -1,0 +1,4 @@
+{
+  "MODE": "development|production",
+  "DB_PATH": "Put path to sqlite db here"
+}

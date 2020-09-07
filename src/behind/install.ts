@@ -30,17 +30,18 @@ export async function install(connection: Connection): Promise<void> {
   if(config.installed) return;
 
   console.log("Installing...");
+  const settingRepository = await connection.getRepository(Settings);
 
   const defaultFSSavePath = new Settings();
   defaultFSSavePath.name = "fs.savePath";
   defaultFSSavePath.value = await getFSSavePath();
 
-  await connection.mongoManager.save(defaultFSSavePath);
+  await settingRepository.save(defaultFSSavePath);
 
   const pollRate = new Settings();
   pollRate.name = "general.pollRate";
   pollRate.value = "600";
-
-  await connection.mongoManager.save(pollRate);
+  
+  await settingRepository.save(pollRate);
   await markAsInstalled();
 }

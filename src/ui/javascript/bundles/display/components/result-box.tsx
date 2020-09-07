@@ -1,9 +1,9 @@
 import * as React from 'react';
-import {SearchUpIllustration} from "./search-up-illustration";
+import { SearchUpIllustration } from "./search-up-illustration";
 import "../scss/result-box.scss";
-import {SearchResult} from "./search-result";
-import {ISearchResult} from "../../../../../behind/modules/search";
-import {AcceptResultFooter} from "../../forms/components/accept-result-footer";
+import { SearchResult } from "./search-result";
+import { ISearchResult } from "../../../../../behind/modules/search";
+import { AcceptResultFooter } from "../../forms/components/accept-result-footer";
 
 export interface FeedResult {
   title: string;
@@ -22,7 +22,7 @@ export interface ResultBoxProps {
 export class ResultBox extends React.Component<ResultBoxProps> {
   private renderResults(): React.ReactNode {
     if(!this.props.result || this.props.result.list.length === 0) {
-      return <SearchUpIllustration/>;
+      return <SearchUpIllustration />;
     }
     return (
       <>
