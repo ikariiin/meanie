@@ -11,7 +11,7 @@ export const AppTheme = createMuiTheme({
     },
   },
   typography: {
-    fontFamily: `Roboto, Poppins, "Segoe UI", Arial, sans-serif`,
+    fontFamily: `Inter, Roboto, Poppins, "Segoe UI", Arial, sans-serif`,
   },
 });
 
@@ -26,6 +26,6 @@ export const LocalLightTheme = createMuiTheme({
     },
   },
   typography: {
-    fontFamily: `Roboto, Poppins, "Segoe UI", Arial, sans-serif`,
+    fontFamily: `Inter, Roboto, Poppins, "Segoe UI", Arial, sans-serif`,
   },
 });

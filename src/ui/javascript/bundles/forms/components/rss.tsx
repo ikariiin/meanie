@@ -61,7 +61,7 @@ export class RSSForm extends React.Component<RSSFormProps> {
 
   public render() {
     return (
-      <form className="rss-form">
+      <form className="rss-form" onSubmit={ev => { ev.preventDefault(); this.callAPI(); }}>
         <section className="input-group">
           <TextField
             value={this.search}
@@ -70,11 +70,15 @@ export class RSSForm extends React.Component<RSSFormProps> {
             variant="filled"
             placeholder="Search for an anime to get its RSS feeds listed"
             InputProps={{
-              startAdornment: <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
             }}
-            label="RSS Feed" />
+            label="RSS Feed"
+            color="secondary"
+          />
         </section>
         <MuiThemeProvider theme={LocalLightTheme}>
           <section className="search-tags-container">
@@ -107,7 +111,7 @@ export class RSSForm extends React.Component<RSSFormProps> {
           </section>
         </MuiThemeProvider>
         <section className="submit-button-container">
-          <Button variant="contained" color="secondary" onClick={() => this.callAPI()}>
+          <Button variant="contained" color="secondary" type="submit">
             Search
           </Button>
         </section>
