@@ -20,7 +20,7 @@ import {AnitomyParsedTitle} from "../../../../../behind/modules/anitomy";
 import {Skeleton} from "@material-ui/lab";
 import {duration} from "moment";
 import {humanFileSize, shorten} from "../util/lengths";
-import {serveFile} from "../../display/utils/torrent.api";
+import {serveFile, pauseTorrent} from "../../display/utils/torrent.api";
 
 @observer
 export class Activity extends React.Component<ITorrent_Transportable> {
@@ -37,7 +37,9 @@ export class Activity extends React.Component<ITorrent_Transportable> {
   }
 
   @computed private get renderTimeLeft() {
-    if(this.props.webTorrent.done) return "Done";
+    if (this.props.webTorrent.done) return "Done";
+    
+    if (this.props.webTorrent.timeRemaining === null) return "Torrent stopped";
 
     return duration(this.props.webTorrent.timeRemaining).humanize();
   }
@@ -97,7 +99,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
         </div>
         <section className="container progress-container">
           <div className="section-label">
-            Progress
+            Progress: {(this.props.webTorrent.progress * 100).toFixed(2)}%
           </div>
           <LinearProgress variant="determinate" value={this.props.webTorrent.progress * 100} color="primary" />
         </section>
@@ -205,7 +207,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
           <Button color="default">
             Cancel Download
           </Button>
-          <Button color="secondary">
+          <Button color="secondary" onClick={ev => { ev.stopPropagation(); pauseTorrent(this.props); }}>
             Pause
           </Button>
         </section>

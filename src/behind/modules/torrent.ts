@@ -104,9 +104,19 @@ export class Torrent {
   public watch(handler: ActivityWatcher): void {
   }
 
-  public pause(torrent: ITorrent_Transportable): void {
-    const internalTorrent = this.torrents.find(existingTorrent => torrent.webTorrent.infoHash === existingTorrent.webTorrent.infoHash);
-    internalTorrent?.webTorrent.pause();
+  public async pause(torrent: ITorrent_Transportable): Promise<void> {
+    const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
+
+    if (!internalTorrent) return;
+
+    const downloadsRepository = this.dbConn.getRepository(Downloads);
+    const dbDownload = await downloadsRepository.findOne({ fsLink: internalTorrent.dir });
+
+    if (!dbDownload) return;
+    dbDownload.running = false;
+    await downloadsRepository.save(dbDownload);
+
+    internalTorrent.webTorrent.destroy();
   }
 
   protected convertToTransportable(webTorrent: WebTorrent.Torrent) {
