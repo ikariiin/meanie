@@ -104,6 +104,11 @@ export class Torrent {
   public watch(handler: ActivityWatcher): void {
   }
 
+  public pause(torrent: ITorrent_Transportable): void {
+    const internalTorrent = this.torrents.find(existingTorrent => torrent.webTorrent.infoHash === existingTorrent.webTorrent.infoHash);
+    internalTorrent?.webTorrent.pause();
+  }
+
   protected convertToTransportable(webTorrent: WebTorrent.Torrent) {
     return {
       name: webTorrent.name,
@@ -183,10 +188,16 @@ TorrentRouter.get("/view/:infoHash/:fileIndex", (req: express.Request, res: expr
 });
 
 TorrentRouter.get("/running", async (req: express.Request, res: express.Response) => {
-  const downloadsRepository = await req.db.getRepository(Downloads);
+  const downloadsRepository = req.db.getRepository(Downloads);
   const runningDownloads = await downloadsRepository.find({ where: { running: true }, relations: ['details'] });
 
   res.json(runningDownloads);
 });
+
+TorrentRouter.post("/pause", (req: express.Request, res: express.Response) => {
+  const torrent: ITorrent_Transportable = req.body;
+
+  req.torrent.pause(torrent);
+})
 
 export { TorrentRouter };

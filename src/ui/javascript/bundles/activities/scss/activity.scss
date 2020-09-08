@@ -3,7 +3,7 @@
   border-radius: 4px;
   padding: 1rem 1.5rem;
   display: grid;
-  grid-template-columns: .7fr 5fr 8fr 3fr .5fr;
+  grid-template-columns: .7fr 6fr 7fr 2fr .5fr;
   cursor: pointer;
   margin: .4rem 0;
   transition: 150ms all ease;
@@ -134,13 +134,13 @@
 
   .title {
     font-size: .9rem;
-    font-weight: 400;
+    font-weight: 500;
     display: flex;
     align-items: center;
     margin: 0;
 
     .tag {
-      background: rgba(255,255,255,.9);
+      background: #E0E0E0;
       border-radius: 4px;
       padding: .2rem;
       color: #121212;
@@ -149,7 +149,7 @@
     }
   }
   .title-container {
-    margin: 0 1.5rem;
+    margin: 0 1.5rem 0 0;
   }
   .status-icon {
     font-size: 1.5rem;
