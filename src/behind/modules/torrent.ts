@@ -5,6 +5,8 @@ import {formatAPIResponse} from "../util/response-formatter";
 import * as WebTorrent from "webtorrent";
 import {Settings} from "../entitiy/settings";
 import {Server} from "http";
+import { Downloads } from "../entitiy/downloads";
+import { DownloadDetails } from "../entitiy/download-details";
 
 export interface ITorrent {
   title: string;
@@ -68,12 +70,35 @@ export class Torrent {
   public async submit(newTorrent: FeedResult) {
     const settingsRepository = await this.dbConn.getRepository(Settings);
     const savePath = (await settingsRepository.find({ name: "fs.savePath" }))[0].value;
-    this.client.add(newTorrent.torrentLink, { path: savePath }, (torrent) => this.torrents.push({
-      webTorrent: torrent,
-      details: newTorrent,
-      dir: `${savePath}/${torrent.name}`,
-      title: `${torrent.name}`
-    }));
+    this.client.add(newTorrent.torrentLink, { path: savePath }, async (torrent) => {
+      const fsStorePath = `${savePath}/${torrent.name}`;
+      this.torrents.push({
+        webTorrent: torrent,
+        details: newTorrent,
+        dir: fsStorePath,
+        title: `${torrent.name}`
+      });
+
+      // Save to database
+      const downloadsRepository = this.dbConn.getRepository(Downloads);
+      const downloadDetailsRepository = this.dbConn.getRepository(DownloadDetails);
+
+      // Check if it is already added, if so this torrent is being submitted for resuming after restart.
+      const [_, downloadsCount] = await downloadsRepository.findAndCount({ where: { fsLink: fsStorePath } });
+      if (downloadsCount !== 0) return;
+
+      const downloadDetails = new DownloadDetails();
+      Object.assign(downloadDetails, newTorrent);
+      await downloadDetailsRepository.save(downloadDetails);
+      
+      const download = new Downloads();
+      download.type = "download";
+      download.details = downloadDetails;
+      download.feedURL = newTorrent.torrentLink;
+      download.fsLink = fsStorePath;
+      download.running = true;
+      await downloadsRepository.save(download);
+    });
   }
 
   public watch(handler: ActivityWatcher): void {
@@ -128,6 +153,12 @@ export class Torrent {
 
     return port;
   }
+
+  public stopAll(): void {
+    this.torrents.forEach(torrent => {
+      torrent.webTorrent.pause();
+    });
+  }
 }
 
 const TorrentRouter = express.Router();
@@ -149,6 +180,13 @@ TorrentRouter.get("/view/:infoHash/:fileIndex", (req: express.Request, res: expr
   formatAPIResponse(res, {
     uri
   });
+});
+
+TorrentRouter.get("/running", async (req: express.Request, res: express.Response) => {
+  const downloadsRepository = await req.db.getRepository(Downloads);
+  const runningDownloads = await downloadsRepository.find({ where: { running: true }, relations: ['details'] });
+
+  res.json(runningDownloads);
 });
 
 export { TorrentRouter };

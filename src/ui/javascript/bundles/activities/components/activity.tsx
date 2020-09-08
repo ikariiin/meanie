@@ -194,6 +194,9 @@ export class Activity extends React.Component<ITorrent_Transportable> {
           )}
         </section>
         <section className="controls-container">
+          <Button color="default">
+            Close Detailed View
+          </Button>
           {this.videoURI && (
             <Button color="default">
               Close Preview

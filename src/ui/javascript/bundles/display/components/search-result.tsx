@@ -1,15 +1,15 @@
 import * as React from 'react';
-import {FeedResult} from "./result-box";
+import { FeedResult } from "./result-box";
 import TorrentIcon from "@material-ui/icons/FeaturedVideo";
 import SeedersIcon from "@material-ui/icons/ArrowUpward";
 import LeechersIcon from "@material-ui/icons/ArrowDownward";
 import DateIcon from "@material-ui/icons/Timer";
 import SizeIcon from "@material-ui/icons/InsertDriveFile";
 import "../scss/search-result.scss";
-import {submitTorrent} from "../utils/torrent.api";
-import {observer} from "mobx-react";
-import {observable} from "mobx";
-import {ConfirmTorrentDownload} from "./confirm-torrent-download";
+import { submitTorrent } from "../utils/torrent.api";
+import { observer } from "mobx-react";
+import { observable } from "mobx";
+import { ConfirmTorrentDownload } from "./confirm-torrent-download";
 
 export interface SearchResultProps extends FeedResult {
   disableClick?: boolean;
@@ -35,7 +35,13 @@ export class SearchResult extends React.Component<SearchResultProps> {
   public render() {
     return (
       <section className="search-result" onClick={this.props.disableClick ? () => {} : () => this.confirmTorrentSubmission()}>
-        {this.displayConfirmationDialog && <ConfirmTorrentDownload close={() => this.closeConfirmationDialog()} confirm={() => this.download()} feed={this.props} />}
+        {this.displayConfirmationDialog && (
+          <ConfirmTorrentDownload
+            close={() => this.closeConfirmationDialog()}
+            confirm={() => this.download()}
+            feed={this.props}
+          />
+        )}
         <section className="torrent-title">
           <div className="icon-container">
             <TorrentIcon style={{ fontSize: "inherit" }} />

@@ -26,7 +26,7 @@
         display: flex;
 
         .status-icon {
-          margin-right: .5rem;
+          margin-right: 1.5rem;
         }
       }
 
@@ -57,11 +57,10 @@
           flex-grow: 1;
         }
         .complete-percentage {
-          margin-right: 1rem;
+          margin: 0 1rem 0 .5rem;
           font-weight: 700;
           font-size: .9rem;
-          width: 4vw;
-          text-align: center;
+          text-align: left;
           color: rgba(255,255,255,.8);
         }
         .download-speed {

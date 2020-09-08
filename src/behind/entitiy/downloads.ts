@@ -13,6 +13,12 @@ export class Downloads {
   @JoinColumn()
   public details!: DownloadDetails;
 
-  @Column()
+  @Column({ unique: true })
   public fsLink!: string;
+
+  @Column()
+  public type!: "cron" | "download";
+
+  @Column()
+  public running!: boolean;
 }

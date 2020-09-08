@@ -28,6 +28,7 @@ import { SettingsRouter } from "./modules/settings";
 // App config
 import * as applicationConfig from '../../config.json';
 import { DownloadDetails } from "./entitiy/download-details";
+import { registerExitHandlers } from "./exit-handler";
 
 const app = express();
 ExpressWS(app);
@@ -52,6 +53,10 @@ async function initializeApp() {
   const torrent = new Torrent(connection);
   const cron = new Cron(connection);
   cron.start();
+
+  registerExitHandlers(
+    torrent
+  );
 
   // MiddleWares
   app.use(setDB(connection));

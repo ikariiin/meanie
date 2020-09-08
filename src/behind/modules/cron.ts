@@ -73,6 +73,8 @@ export class Cron {
       downloads.feedURL = url;
       downloads.details = downloadDetails;
       downloads.fsLink = "dummy";
+      downloads.type = "cron";
+      downloads.running = true;
 
       return downloads;
     });
