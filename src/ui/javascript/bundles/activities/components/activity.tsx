@@ -1,6 +1,6 @@
 import * as React from "react";
 import "../scss/activity.scss"
-import {green} from "@material-ui/core/colors";
+import { teal } from "@material-ui/core/colors";
 import DownloadIcon from "@material-ui/icons/CloudDownload";
 import {
   Button,
@@ -8,19 +8,21 @@ import {
   LinearProgress,
   List,
   ListItem,
-  ListItemText, Paper,
-  Tooltip, Typography
+  ListItemText,
+  Paper,
+  Tooltip,
+  Typography
 } from "@material-ui/core";
 import DropDownArrowIcon from "@material-ui/icons/ExpandMore";
-import {File, ITorrent_Transportable} from "../../../../../behind/modules/torrent";
-import {observer} from "mobx-react";
-import {action, computed, observable} from "mobx";
-import {parseAnimeTitle} from "../util/anitomy.api";
-import {AnitomyParsedTitle} from "../../../../../behind/modules/anitomy";
-import {Skeleton} from "@material-ui/lab";
-import {duration} from "moment";
-import {humanFileSize, shorten} from "../util/lengths";
-import {serveFile, pauseTorrent} from "../../display/utils/torrent.api";
+import { File, ITorrent_Transportable } from "../../../../../behind/modules/torrent";
+import { observer } from "mobx-react";
+import { action, computed, observable } from "mobx";
+import { parseAnimeTitle } from "../util/anitomy.api";
+import { AnitomyParsedTitle } from "../../../../../behind/modules/anitomy";
+import { Skeleton } from "@material-ui/lab";
+import { duration } from "moment";
+import { humanFileSize, shorten } from "../util/lengths";
+import { serveFile, pauseTorrent, resumeTorrent } from "../../display/utils/torrent.api";
 
 @observer
 export class Activity extends React.Component<ITorrent_Transportable> {
@@ -39,7 +41,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
   @computed private get renderTimeLeft() {
     if (this.props.webTorrent.done) return "Done";
     
-    if (this.props.webTorrent.timeRemaining === null) return "Torrent stopped";
+    if (this.props.webTorrent.timeRemaining === null) return "∞";
 
     return duration(this.props.webTorrent.timeRemaining).humanize();
   }
@@ -48,13 +50,21 @@ export class Activity extends React.Component<ITorrent_Transportable> {
     this.expanded = !this.expanded;
   }
 
+  private toggleTorrentState(): void {
+    if (this.props.paused) {
+      resumeTorrent(this.props);
+    } else {
+      pauseTorrent(this.props);
+    }
+  }
+
   private renderTitle(blocky: boolean = false) {
     return (
       <div className="title">
         {
           blocky ? (
             <section className="block-title">
-              <div className="status-icon" style={{ background: green["A400"] }}>
+              <div className="status-icon" style={{ background: teal[400] }}>
                 <DownloadIcon style={{ fontSize: "inherit" }} />
               </div>
               {this.parsedName ? this.parsedName.anime_title : <Skeleton height={15} width="100%" variant="rect" />}
@@ -86,7 +96,7 @@ export class Activity extends React.Component<ITorrent_Transportable> {
   private get inlineActivity() {
     return (
       <>
-        <div className="status-icon" style={{ background: green["A400"] }}>
+        <div className="status-icon" style={{ background: teal[400] }}>
           <DownloadIcon style={{ fontSize: "inherit" }} />
         </div>
         <div className="container title-container">
@@ -207,8 +217,8 @@ export class Activity extends React.Component<ITorrent_Transportable> {
           <Button color="default">
             Cancel Download
           </Button>
-          <Button color="secondary" onClick={ev => { ev.stopPropagation(); pauseTorrent(this.props); }}>
-            Pause
+          <Button color="secondary" onClick={ev => { ev.stopPropagation(); this.toggleTorrentState(); }}>
+            {this.props.paused ? "Start" : "Pause"}
           </Button>
         </section>
       </>

@@ -1,5 +1,5 @@
-import {FeedResult} from "../components/result-box";
-import {API_HEADERS, HOST} from "../../forms/util/api";
+import { FeedResult } from "../components/result-box";
+import { API_HEADERS, HOST } from "../../forms/util/api";
 import { Downloads } from "../../../../../behind/entitiy/downloads";
 import { ITorrent_Transportable } from "../../../../../behind/modules/torrent";
 
@@ -13,8 +13,8 @@ export async function submitTorrent(torrent: FeedResult) {
   return response.json();
 }
 
-export async function getRunningTorrents(): Promise<Array<Downloads>> {
-  const response = await fetch(`${HOST}/torrents/running`, {
+export async function getTorrents(): Promise<Array<Downloads>> {
+  const response = await fetch(`${HOST}/torrents`, {
     ...API_HEADERS,
     method: "GET"
   });
@@ -30,7 +30,26 @@ export async function pauseTorrent(torrent: ITorrent_Transportable): Promise<voi
   });
 }
 
+export async function resumeTorrent(torrent: ITorrent_Transportable): Promise<void> {
+  const response = await fetch(`${HOST}/torrents/resume`, {
+    ...API_HEADERS,
+    method: "POST",
+    body: JSON.stringify(torrent, null, 2)
+  });
+}
+
 export async function serveFile(infoHash: string, index: number) {
   const response = await fetch(`${HOST}/torrents/view/${infoHash}/${index}`, API_HEADERS);
+  return response.json();
+}
+
+// read: behind/modules/torrent.ts for what this api call does different to submitTorrent
+export async function initTorrent(torrent: FeedResult): Promise<void> {
+  const response = await fetch(`${HOST}/torrents/init`, {
+    ...API_HEADERS,
+    method: "POST",
+    body: JSON.stringify(torrent, null, 2)
+  });
+
   return response.json();
 }

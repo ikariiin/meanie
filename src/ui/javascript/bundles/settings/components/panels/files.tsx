@@ -26,6 +26,7 @@ export class FilesPanel extends React.Component<{}> {
             label="Path"
             value={this.config["fs.savePath"] ? this.config["fs.savePath"].value : "Loading..."}
             placeholder="Example: /home/u/Downloads"
+            size="small"
             variant="outlined" />
         </SettingItem>
       </SettingsPanel>

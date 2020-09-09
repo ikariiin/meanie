@@ -8,11 +8,22 @@
   background: #151515;
   z-index: 3;
 
+  .settings-close-button {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 4;
+  }
+
   .settings-panels {
     width: 100%;
     display: flex;
     align-items: center;
     flex-direction: column;
+
+    .title {
+      width: calc(45%);
+    }
 
     .button-container {
       text-align: right;

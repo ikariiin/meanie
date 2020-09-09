@@ -1,10 +1,10 @@
-import {Connection} from "typeorm";
+import { Connection } from "typeorm";
 import * as express from "express";
-import {FeedResult} from "../../ui/javascript/bundles/display/components/result-box";
-import {formatAPIResponse} from "../util/response-formatter";
+import { FeedResult } from "../../ui/javascript/bundles/display/components/result-box";
+import { formatAPIResponse } from "../util/response-formatter";
 import * as WebTorrent from "webtorrent";
-import {Settings} from "../entitiy/settings";
-import {Server} from "http";
+import { Settings } from "../entitiy/settings";
+import { Server } from "http";
 import { Downloads } from "../entitiy/downloads";
 import { DownloadDetails } from "../entitiy/download-details";
 
@@ -35,6 +35,8 @@ export interface Torrent_Transportable {
   done: boolean;
   created: Date;
   files: Array<File>;
+  paused: boolean;
+  ready: boolean;
 }
 
 export interface ITorrent_Transportable {
@@ -42,6 +44,7 @@ export interface ITorrent_Transportable {
   dir: string;
   webTorrent: Torrent_Transportable;
   details: FeedResult;
+  paused: boolean;
 }
 
 export interface TorrentServer {
@@ -57,6 +60,10 @@ export class Torrent {
   private client: WebTorrent.Instance;
   private torrents: Array<ITorrent> = [];
   private servers: Map<string, TorrentServer> = new Map();
+  /**
+   * Map: infoHash -> pause state
+   */
+  private pausedMap: Map<string, boolean> = new Map();
 
   constructor(dbConn: Connection) {
     this.dbConn = dbConn;
@@ -67,37 +74,95 @@ export class Torrent {
     //
   }
 
-  public async submit(newTorrent: FeedResult) {
-    const settingsRepository = await this.dbConn.getRepository(Settings);
+  private async clientAddCallback(
+    torrent: WebTorrent.Torrent,
+    savePath: string,
+    newTorrent: FeedResult,
+    onlyInit?: boolean,
+    filterPreExisting?: boolean
+  ): Promise<void> {
+    const fsStorePath = `${savePath}/${torrent.name}`;
+    if (filterPreExisting) this.torrents = this.torrents.filter(internalTorrent => internalTorrent.webTorrent.infoHash !== torrent.infoHash);
+
+    this.torrents.push({
+      webTorrent: torrent,
+      details: newTorrent,
+      dir: fsStorePath,
+      title: `${torrent.name}`
+    });
+
+    if (onlyInit) torrent.destroy(() => this.pausedMap.set(torrent.infoHash, true));
+    this.pausedMap.set(torrent.infoHash, false);
+
+    // Save to database
+    const downloadsRepository = this.dbConn.getRepository(Downloads);
+    const downloadDetailsRepository = this.dbConn.getRepository(DownloadDetails);
+
+    // Check if it is already added, if so this torrent is being submitted for resuming after restart.
+    const [_, downloadsCount] = await downloadsRepository.findAndCount({ where: { fsLink: fsStorePath } });
+    if (downloadsCount !== 0) return;
+
+    const downloadDetails = new DownloadDetails();
+    Object.assign(downloadDetails, newTorrent);
+    await downloadDetailsRepository.save(downloadDetails);
+    
+    const download = new Downloads();
+    download.type = "download";
+    download.details = downloadDetails;
+    download.feedURL = newTorrent.torrentLink;
+    download.fsLink = fsStorePath;
+    download.running = true;
+    await downloadsRepository.save(download);
+  }
+
+  public async submit(newTorrent: FeedResult, onlyInit?: boolean): Promise<void> {
+    const settingsRepository = this.dbConn.getRepository(Settings);
     const savePath = (await settingsRepository.find({ name: "fs.savePath" }))[0].value;
-    this.client.add(newTorrent.torrentLink, { path: savePath }, async (torrent) => {
-      const fsStorePath = `${savePath}/${torrent.name}`;
-      this.torrents.push({
-        webTorrent: torrent,
-        details: newTorrent,
-        dir: fsStorePath,
-        title: `${torrent.name}`
-      });
 
-      // Save to database
-      const downloadsRepository = this.dbConn.getRepository(Downloads);
-      const downloadDetailsRepository = this.dbConn.getRepository(DownloadDetails);
+    // Check if the requested torrent is already added in case of only init.
+    // This is required because the torrent if paused or only init'd so far, its destroyed.
+    // So the client will try to add the torrent again, resulting in a duplicate.
+    if (onlyInit && this.torrents.find(torrent => torrent.details.torrentLink === newTorrent.torrentLink)) {
+      return;
+    }
 
-      // Check if it is already added, if so this torrent is being submitted for resuming after restart.
-      const [_, downloadsCount] = await downloadsRepository.findAndCount({ where: { fsLink: fsStorePath } });
-      if (downloadsCount !== 0) return;
+    this.client.add(newTorrent.torrentLink, { path: savePath }, torrent => {
+      this.clientAddCallback(
+        torrent,
+        savePath,
+        newTorrent,
+        onlyInit
+      );
+    });
+  }
 
-      const downloadDetails = new DownloadDetails();
-      Object.assign(downloadDetails, newTorrent);
-      await downloadDetailsRepository.save(downloadDetails);
-      
-      const download = new Downloads();
-      download.type = "download";
-      download.details = downloadDetails;
-      download.feedURL = newTorrent.torrentLink;
-      download.fsLink = fsStorePath;
-      download.running = true;
-      await downloadsRepository.save(download);
+  /**
+   * NOTE: Be sure the torrent you are trying to resume is already init'd and added to the client.
+   * @param torrent {ITorrent_Transportable}
+   */
+  public async resume(torrent: ITorrent_Transportable): Promise<void> {
+    const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
+
+    if (!internalTorrent) return;
+
+    const downloadsRepository = this.dbConn.getRepository(Downloads);
+    const dbDownload = await downloadsRepository.findOne({ fsLink: internalTorrent.dir });
+
+    const settingsRepository = this.dbConn.getRepository(Settings);
+    const savePath = (await settingsRepository.find({ name: "fs.savePath" }))[0].value;
+
+    if (!dbDownload) return;
+    dbDownload.running = true;
+    await downloadsRepository.save(dbDownload);
+
+    this.client.add(internalTorrent.details.torrentLink, { path: savePath }, async (torrent) => {
+      await this.clientAddCallback(
+        torrent,
+        savePath,
+        internalTorrent.details,
+        false,
+        true
+      );
     });
   }
 
@@ -116,10 +181,10 @@ export class Torrent {
     dbDownload.running = false;
     await downloadsRepository.save(dbDownload);
 
-    internalTorrent.webTorrent.destroy();
+    internalTorrent.webTorrent.destroy(() => this.pausedMap.set(internalTorrent.webTorrent.infoHash, true));
   }
 
-  protected convertToTransportable(webTorrent: WebTorrent.Torrent) {
+  protected convertToTransportable(webTorrent: WebTorrent.Torrent): Torrent_Transportable {
     return {
       name: webTorrent.name,
       announce: webTorrent.announce,
@@ -131,6 +196,8 @@ export class Torrent {
       numPeers: webTorrent.numPeers,
       progress: webTorrent.progress,
       timeRemaining: webTorrent.timeRemaining,
+      paused: webTorrent.paused,
+      ready: webTorrent.ready,
       files: webTorrent.files.map(file => ({
         name: file.name,
         downloaded: file.downloaded,
@@ -149,7 +216,8 @@ export class Torrent {
 
         return {
           ...torrent,
-          webTorrent: this.convertToTransportable(webTorrent)
+          webTorrent: this.convertToTransportable(webTorrent),
+          paused: this.pausedMap.get(webTorrent.infoHash) ?? true
         }
       }));
     }, 1000);
@@ -179,11 +247,20 @@ export class Torrent {
 const TorrentRouter = express.Router();
 
 TorrentRouter.post("/new", (req: express.Request, res: express.Response) => {
-  const newTorrent: FeedResult = req.body;
-  req.torrent.submit(newTorrent);
+  req.torrent.submit(req.body as FeedResult);
 
   formatAPIResponse(res, {
     submitted: true
+  });
+});
+
+// This route should be used to only initialize the torrent.
+// That is, add torrent to the client, but not allow it to connect it to peers.
+TorrentRouter.post("/init", (req: express.Request, res: express.Response) => {
+  req.torrent.submit(req.body as FeedResult, true);
+
+  formatAPIResponse(res, {
+    init: true
   });
 });
 
@@ -197,17 +274,25 @@ TorrentRouter.get("/view/:infoHash/:fileIndex", (req: express.Request, res: expr
   });
 });
 
-TorrentRouter.get("/running", async (req: express.Request, res: express.Response) => {
+TorrentRouter.get("/", async (req: express.Request, res: express.Response) => {
   const downloadsRepository = req.db.getRepository(Downloads);
-  const runningDownloads = await downloadsRepository.find({ where: { running: true }, relations: ['details'] });
+  const runningDownloads = await downloadsRepository.find({ relations: ['details'] });
 
   res.json(runningDownloads);
 });
 
 TorrentRouter.post("/pause", (req: express.Request, res: express.Response) => {
-  const torrent: ITorrent_Transportable = req.body;
+  req.torrent.pause(req.body as ITorrent_Transportable);
+  formatAPIResponse(res, {
+    paused: true
+  });
+});
 
-  req.torrent.pause(torrent);
+TorrentRouter.post("/resume", (req: express.Request, res: express.Response) => {
+  req.torrent.resume(req.body as ITorrent_Transportable);
+  formatAPIResponse(res, {
+    resumed: true
+  });
 })
 
 export { TorrentRouter };

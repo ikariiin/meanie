@@ -28,7 +28,8 @@ export class GeneralPanel extends React.Component<{}> {
             label="Interval in seconds"
             placeholder="Example: 600 (10 minutes)"
             value={this.config["general.pollRate"] ? this.config["general.pollRate"].value : "Loading..."}
-            onChange={() => {}}
+            onChange={() => { }}
+            size="small"
             variant="outlined" />
         </SettingItem>
       </SettingsPanel>

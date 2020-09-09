@@ -15,12 +15,12 @@ export class Settings extends React.Component<SettingsProps> {
   public render() {
     return (
       <section className="settings" {...this.props}>
-        <Title secondary={
-          <SettingsClose close={this.props.close} />
-        }>
-          Settings
-        </Title>
         <section className="settings-panels">
+          <Title secondary={
+            <SettingsClose close={this.props.close} className="settings-close-button" />
+          }>
+            Settings
+          </Title>
           <GeneralPanel />
           <FilesPanel />
           <section className="button-container">

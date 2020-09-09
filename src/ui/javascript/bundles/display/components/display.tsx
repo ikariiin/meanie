@@ -18,7 +18,7 @@ export class Display extends React.Component<{}> {
   public render() {
     return (
       <section className="display-container">
-        <Grow in={this.displaySettings} style={{ transformOrigin: 'bottom' }} {...(this.displaySettings ? { timeout: 500 } : {})}>
+        <Grow in={this.displaySettings} style={{ transformOrigin: 'bottom' }} timeout={100}>
           <Settings close={() => this.toggleSettingsDisplay()} />
         </Grow>
         <InputPane />

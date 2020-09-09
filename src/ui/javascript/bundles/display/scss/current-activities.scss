@@ -1,8 +1,11 @@
 .current-activities {
-  height: calc(100vh - 2rem);
-  padding: 1rem 1.5rem 1rem 1rem;
+  height: calc(100vh - 6rem);
+  margin: 2rem 1rem 2rem 0;
+  padding: 1rem 1.75rem;
   position: relative;
   overflow: auto;
+  border-radius: 13px !important;
+  background-color: #161616 !important;
 
   .activities {
     margin-top: 1.5rem;

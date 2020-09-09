@@ -61,6 +61,12 @@ export class WebSocketHandler {
         }))
       }));
     }
+    if (subscriptionDetails.for === "shutdown") {
+      process.on("exit", () => this.websocket.send(JSON.stringify({
+        shutdown: true,
+        uuid: subscriptionDetails.uuid
+      })));
+    }
   }
 
   private handleNewMessage(message: WebSocket.Data): void {
