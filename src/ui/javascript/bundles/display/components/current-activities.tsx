@@ -41,7 +41,7 @@ export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
     if(!this.websocket) return;
 
     this.websocket.addOpenHandler(() => {
-      this.websocket.subscribe("activity", (newData: any) => this.handleTorrentsMutation(newData));
+      this.websocket.subscribe("torrents", (newData: any) => this.handleTorrentsMutation(newData));
     });
     
     const runningTorrents = await getTorrents();
@@ -70,7 +70,7 @@ export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
       <section className="activities">
         <ActivitiesManageBar onSearch={search => this.search = search} onSortChange={sortBy => this.sortBy = sortBy} />
         {this.torrents.map(activity => (
-          <Activity {...activity} />
+          <Activity torrent={activity} websocket={this.websocket} key={activity.dir} />
         ))}
       </section>
     )

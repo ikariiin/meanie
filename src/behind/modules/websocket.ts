@@ -67,6 +67,11 @@ export class WebSocketHandler {
         uuid: subscriptionDetails.uuid
       })));
     }
+    if (subscriptionDetails.for === "torrents-mutation") {
+      this.torrent.addMutationWatcher((torrent, mutationType) => this.websocket.send(JSON.stringify({
+        torrent, mutationType
+      })));
+    }
   }
 
   private handleNewMessage(message: WebSocket.Data): void {

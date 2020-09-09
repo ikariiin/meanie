@@ -4,7 +4,7 @@
   padding: 1rem 1.5rem;
   display: grid;
   grid-template-columns: .7fr 6fr 7fr 2fr .5fr;
-  cursor: pointer;
+  cursor: default;
   margin: .4rem 0;
   transition: 150ms all ease;
   height: auto;
@@ -22,8 +22,8 @@
       font-size: 1.5rem;
 
       .block-title {
-        flex-grow: 1;
         display: flex;
+        align-items: center;
 
         .status-icon {
           margin-right: 1.5rem;
@@ -31,13 +31,14 @@
       }
 
       .tag {
-        background: rgba(255,255,255,.9);
+        background: #E0E0E0;
         border-radius: 4px;
         padding: .2rem;
         color: #121212;
         font-size: .8rem;
         font-weight: 400;
         margin-left: .5rem;
+        user-select: none;
       }
     }
 
@@ -55,6 +56,7 @@
 
         .progress {
           flex-grow: 1;
+          margin-top: 0;
         }
         .complete-percentage {
           margin: 0 1rem 0 .5rem;
@@ -77,51 +79,11 @@
           font-weight: 700;
           font-size: .9rem;
           color: rgba(255,255,255,.6);
-          width: 8vw;
+          margin: 0 .75rem;
+          min-width: 7vw;
+          max-width: 7vw;
           text-align: center;
         }
-      }
-    }
-
-    .announce-and-files {
-      display: grid;
-      grid-template-columns: 1fr 1fr 2fr;
-
-      .list {
-        background: rgba(255,255,255,.1);
-        margin: .5rem;
-
-        .list-header {
-          font-weight: 700;
-          font-size: .9rem;
-          color: #FFFFFF;
-          margin: .2rem 16px;
-          letter-spacing: 1px;
-        }
-
-        .file-progress {
-          display: flex;
-          align-items: center;
-
-          .percentage {
-            font-size: .8rem;
-            margin-right: .4rem;
-            width: 40px;
-            color: rgba(255,255,255,.4);
-            text-align: center;
-          }
-          .progress-l {
-            flex-grow: 1;
-          }
-        }
-      }
-
-      video {
-        height: auto;
-        width: 100%;
-        margin: .4rem;
-        border-radius: 4px;
-        outline: none;
       }
     }
 
@@ -146,6 +108,7 @@
       color: #121212;
       font-size: .8rem;
       margin-left: .5rem;
+      user-select: none;
     }
   }
   .title-container {
@@ -173,7 +136,8 @@
     }
   }
   .progress-container {
-    .section-label {
+    .progress {
+      margin-top: .75rem;
     }
   }
 

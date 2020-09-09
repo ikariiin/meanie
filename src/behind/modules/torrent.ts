@@ -52,6 +52,7 @@ export interface TorrentServer {
   server: Server;
 }
 
+export type MutationWatcher = (torrent: Torrent_Transportable, mutationType: "add"|"pause"|"remove") => void;
 export type ActivityWatcher = (torrent: ITorrent_Transportable) => void;
 export type TorrentsWatcher = (torrents: Array<ITorrent_Transportable>) => void;
 
@@ -60,6 +61,7 @@ export class Torrent {
   private client: WebTorrent.Instance;
   private torrents: Array<ITorrent> = [];
   private servers: Map<string, TorrentServer> = new Map();
+  private mutationWatchers: Array<MutationWatcher> = [];
   /**
    * Map: infoHash -> pause state
    */
@@ -83,6 +85,7 @@ export class Torrent {
   ): Promise<void> {
     const fsStorePath = `${savePath}/${torrent.name}`;
     if (filterPreExisting) this.torrents = this.torrents.filter(internalTorrent => internalTorrent.webTorrent.infoHash !== torrent.infoHash);
+    this.mutationWatchers.forEach(watcher => watcher(this.convertToTransportable(torrent), "add"));
 
     this.torrents.push({
       webTorrent: torrent,
@@ -91,7 +94,10 @@ export class Torrent {
       title: `${torrent.name}`
     });
 
-    if (onlyInit) torrent.destroy(() => this.pausedMap.set(torrent.infoHash, true));
+    if (onlyInit) {
+      torrent.destroy(() => this.pausedMap.set(torrent.infoHash, true));
+      this.mutationWatchers.forEach(watcher => watcher(this.convertToTransportable(torrent), "pause"));
+    }
     this.pausedMap.set(torrent.infoHash, false);
 
     // Save to database
@@ -169,6 +175,11 @@ export class Torrent {
   public watch(handler: ActivityWatcher): void {
   }
 
+  public addMutationWatcher(watcher: MutationWatcher): number {
+    // Array.push returns the new length of the array, so we negate 1 to get the index of the new watcher.
+    return this.mutationWatchers.push(watcher) - 1;
+  }
+
   public async pause(torrent: ITorrent_Transportable): Promise<void> {
     const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
 
@@ -181,7 +192,10 @@ export class Torrent {
     dbDownload.running = false;
     await downloadsRepository.save(dbDownload);
 
-    internalTorrent.webTorrent.destroy(() => this.pausedMap.set(internalTorrent.webTorrent.infoHash, true));
+    internalTorrent.webTorrent.destroy(() => {
+      this.pausedMap.set(internalTorrent.webTorrent.infoHash, true);
+      this.mutationWatchers.forEach(watcher => watcher(this.convertToTransportable(internalTorrent.webTorrent), "pause"));
+    });
   }
 
   protected convertToTransportable(webTorrent: WebTorrent.Torrent): Torrent_Transportable {

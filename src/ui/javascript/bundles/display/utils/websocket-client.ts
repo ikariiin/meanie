@@ -1,5 +1,5 @@
-import {v4 as uuid} from "uuid";
-import {TorrentsWatchResponse} from "../../../../../behind/modules/websocket";
+import { v4 as uuid } from "uuid";
+import { TorrentsWatchResponse } from "../../../../../behind/modules/websocket";
 
 export class WebSocketClient {
   private port: string;
@@ -19,7 +19,7 @@ export class WebSocketClient {
     this.ws.send(JSON.stringify({
       uuid: instanceUUID,
       type: "Subscription",
-      for: "torrents"
+      for: subscription
     }));
 
     this.ws.addEventListener("message", (event) => {
