@@ -7,6 +7,7 @@ import { Settings } from "../entitiy/settings";
 import { Server } from "http";
 import { Downloads } from "../entitiy/downloads";
 import { DownloadDetails } from "../entitiy/download-details";
+import { promises as fs } from 'fs';
 
 export interface ITorrent {
   title: string;
@@ -52,7 +53,8 @@ export interface TorrentServer {
   server: Server;
 }
 
-export type MutationWatcher = (torrent: Torrent_Transportable, mutationType: "add"|"pause"|"remove") => void;
+export type MutationWatcher = (torrent: Torrent_Transportable, mutationType: MutationType) => void;
+export type MutationType = "add" | "pause" | "delete";
 export type ActivityWatcher = (torrent: ITorrent_Transportable) => void;
 export type TorrentsWatcher = (torrents: Array<ITorrent_Transportable>) => void;
 
@@ -148,19 +150,14 @@ export class Torrent {
    */
   public async resume(torrent: ITorrent_Transportable): Promise<void> {
     const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
-
     if (!internalTorrent) return;
-
     const downloadsRepository = this.dbConn.getRepository(Downloads);
     const dbDownload = await downloadsRepository.findOne({ fsLink: internalTorrent.dir });
-
     const settingsRepository = this.dbConn.getRepository(Settings);
     const savePath = (await settingsRepository.find({ name: "fs.savePath" }))[0].value;
-
     if (!dbDownload) return;
     dbDownload.running = true;
     await downloadsRepository.save(dbDownload);
-
     this.client.add(internalTorrent.details.torrentLink, { path: savePath }, async (torrent) => {
       await this.clientAddCallback(
         torrent,
@@ -182,19 +179,33 @@ export class Torrent {
 
   public async pause(torrent: ITorrent_Transportable): Promise<void> {
     const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
-
     if (!internalTorrent) return;
-
     const downloadsRepository = this.dbConn.getRepository(Downloads);
     const dbDownload = await downloadsRepository.findOne({ fsLink: internalTorrent.dir });
-
     if (!dbDownload) return;
     dbDownload.running = false;
     await downloadsRepository.save(dbDownload);
-
     internalTorrent.webTorrent.destroy(() => {
       this.pausedMap.set(internalTorrent.webTorrent.infoHash, true);
       this.mutationWatchers.forEach(watcher => watcher(this.convertToTransportable(internalTorrent.webTorrent), "pause"));
+    });
+  }
+
+  public async delete(torrent: ITorrent_Transportable, deleteFiles: "true"|"false"): Promise<void> {
+    const internalTorrent = this.torrents.find(existingTorrent => existingTorrent.dir === torrent.dir);
+    if (!internalTorrent) return;
+    const downloadsRepository = this.dbConn.getRepository(Downloads);
+    const download = await downloadsRepository.findOne({ fsLink: internalTorrent.dir });
+    if (!download) return;
+    await downloadsRepository.remove(download);
+    internalTorrent.webTorrent.destroy(async () => {
+      if (deleteFiles === "true") {
+        console.log(`Deleting file ${internalTorrent.dir}`);
+        await fs.unlink(internalTorrent.dir);
+      }
+      this.pausedMap.delete(internalTorrent.webTorrent.infoHash);
+      this.torrents = this.torrents.filter(_torrent => torrent.dir !== _torrent.dir);
+      this.mutationWatchers.forEach(watcher => watcher(this.convertToTransportable(internalTorrent.webTorrent), "delete"));
     });
   }
 
@@ -307,6 +318,13 @@ TorrentRouter.post("/resume", (req: express.Request, res: express.Response) => {
   formatAPIResponse(res, {
     resumed: true
   });
-})
+});
+
+TorrentRouter.post("/delete", (req: express.Request, res: express.Response) => {
+  req.torrent.delete(req.body as ITorrent_Transportable, req.query.deleteFiles);
+  formatAPIResponse(res, {
+    deleted: true
+  });
+});
 
 export { TorrentRouter };

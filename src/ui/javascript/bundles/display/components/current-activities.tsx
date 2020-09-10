@@ -33,7 +33,7 @@ export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
   }
 
   private handleTorrentsMutation(mutation: any) {
-    console.log(mutation);
+    // console.log(mutation);
     this.torrents = mutation.torrents;
   }
 
@@ -78,9 +78,15 @@ export class CurrentActivities extends React.Component<CurrentActivitiesProps> {
 
   public render() {
     return (
-      <Paper className="current-activities">
+      <Paper className="current-activities" elevation={0}>
         <Title secondary={
-          <Button className="settings-open-button" variant="outlined" color="default" onClick={() => this.props.toggleSettingsDisplay()}>
+          <Button
+            className="settings-open-button"
+            variant="outlined"
+            color="default"
+            onClick={() => this.props.toggleSettingsDisplay()}
+            size="small"
+          >
             <SettingsIcon className="util--icon-right-space" />
             Settings
           </Button>

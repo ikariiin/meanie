@@ -1,15 +1,14 @@
 import * as React from "react";
 import "../scss/activity.scss"
 import { teal, red } from "@material-ui/core/colors";
-import DownloadIcon from "@material-ui/icons/CloudDownload";
+import { GetApp as DownloadIcon, ExpandMore as DropDownArrowIcon } from "@material-ui/icons";
 import {
   Button,
   IconButton,
   LinearProgress,
   Tooltip
 } from "@material-ui/core";
-import DropDownArrowIcon from "@material-ui/icons/ExpandMore";
-import { File, ITorrent_Transportable, Torrent_Transportable } from "../../../../../behind/modules/torrent";
+import { ITorrent_Transportable, Torrent_Transportable, MutationType } from "../../../../../behind/modules/torrent";
 import { observer } from "mobx-react";
 import { action, computed, observable } from "mobx";
 import { parseAnimeTitle } from "../util/anitomy.api";
@@ -17,8 +16,9 @@ import { AnitomyParsedTitle } from "../../../../../behind/modules/anitomy";
 import { Skeleton } from "@material-ui/lab";
 import { duration } from "moment";
 import { humanFileSize, shorten } from "../util/lengths";
-import { serveFile, pauseTorrent, resumeTorrent } from "../../display/utils/torrent.api";
+import { serveFile, pauseTorrent, resumeTorrent, deleteTorrent } from "../../display/utils/torrent.api";
 import { WebSocketClient } from "../../display/utils/websocket-client";
+import { ActivityDeleteDialog } from "./activity-delete-dialog";
 
 export interface ActivityProps {
   torrent: ITorrent_Transportable;
@@ -30,6 +30,8 @@ export class Activity extends React.Component<ActivityProps> {
   @observable private parsedName: null|AnitomyParsedTitle = null;
   @observable protected expanded: boolean = false;
   @observable private videoURI: string | null = null;
+  @observable private confirmDialogOpen: boolean = false;
+  @observable private deleteFiles: boolean = false;
 
   @action public async parseTitle(): Promise<void> {
     this.parsedName = await parseAnimeTitle(this.props.torrent.title);
@@ -41,7 +43,7 @@ export class Activity extends React.Component<ActivityProps> {
       (mutation: {
         uuid: string;
         torrent: Torrent_Transportable;
-        mutationType: "add" | "pause" | "remove";
+        mutationType: MutationType;
       }) => {
         console.log(mutation);
     });
@@ -54,7 +56,6 @@ export class Activity extends React.Component<ActivityProps> {
 
   @computed private get renderTimeLeft() {
     if (this.props.torrent.webTorrent.done) return "Done";
-    
     if (this.props.torrent.webTorrent.timeRemaining === null) return "∞";
 
     return duration(this.props.torrent.webTorrent.timeRemaining).humanize();
@@ -125,7 +126,7 @@ export class Activity extends React.Component<ActivityProps> {
         </div>
         <section className="container progress-container">
           <div className="section-label">
-            Progress: {(this.props.torrent.webTorrent.progress * 100).toFixed(2)}%
+            Progress: {(this.props.torrent.webTorrent.progress * 100).toFixed(2)}% at {humanFileSize(this.props.torrent.webTorrent.downloadSpeed, true)}/s
           </div>
           <LinearProgress
             variant="determinate"
@@ -155,20 +156,6 @@ export class Activity extends React.Component<ActivityProps> {
   private async serveFile(index: number): Promise<void> {
     const uri = await serveFile(this.props.torrent.webTorrent.infoHash, index);
     this.videoURI = uri.uri;
-  }
-
-  private renderFileListSecondary(file: File) {
-    return (
-      <>
-        <section className="info">
-          Size: {humanFileSize(file.size, true)}
-        </section>
-        <section className="file-progress">
-          <span className="percentage">{(file.progress * 100).toFixed(1)}%</span>
-          <LinearProgress className="progress-l" value={file.progress * 100} variant="determinate" color="secondary" />
-        </section>
-      </>
-    )
   }
 
   private get expandedActivity() {
@@ -203,11 +190,11 @@ export class Activity extends React.Component<ActivityProps> {
               Close Preview
             </Button>
           )}
+          <Button color="primary" onClick={() => this.confirmDialogOpen = true}>
+            Delete
+          </Button>
           <Button color="secondary" onClick={ev => { ev.stopPropagation(); this.toggleTorrentState(); }}>
             {this.props.torrent.paused ? "Start" : "Pause"}
-          </Button>
-          <Button color="primary">
-            Remove
           </Button>
         </section>
       </>
@@ -220,9 +207,28 @@ export class Activity extends React.Component<ActivityProps> {
     return this.expandedActivity;
   }
 
+  @computed private get deleteDialog(): React.ReactNode {
+    if (this.confirmDialogOpen) {
+      return (
+        <ActivityDeleteDialog
+          deleteFiles={this.deleteFiles}
+          onClose={() => this.confirmDialogOpen = false}
+          onConfirm={() => {
+            deleteTorrent(this.props.torrent, this.deleteFiles);
+            this.confirmDialogOpen = false;
+           }}
+          onDeleteFilesChange={val => this.deleteFiles = val}
+          torrent={this.props.torrent}
+        />
+      );
+    }
+    return null;
+  }
+
   public render() {
     return (
       <section className={`activity ${this.expanded ? 'expanded' : ''}`}>
+        {this.deleteDialog}
         {this.conditionalExpansionRender}
       </section>
     )

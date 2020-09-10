@@ -20,6 +20,7 @@ export class Search {
 
   protected static formatList(list: any): Array<FeedResult> {
     const actualList = list.rss.channel[0].item;
+    if (!actualList) return [];
     return actualList.map((item: any) => ({
       title: item["title"][0],
       torrentLink: item["link"][0],

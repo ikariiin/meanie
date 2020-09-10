@@ -115,13 +115,14 @@
     margin: 0 1.5rem 0 0;
   }
   .status-icon {
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+    line-height: 1;
   }
   .container {
     display: flex;

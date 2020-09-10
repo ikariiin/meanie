@@ -68,9 +68,16 @@ export class WebSocketHandler {
       })));
     }
     if (subscriptionDetails.for === "torrents-mutation") {
-      this.torrent.addMutationWatcher((torrent, mutationType) => this.websocket.send(JSON.stringify({
-        torrent, mutationType
-      })));
+      this.torrent.addMutationWatcher((torrent, mutationType) => {
+        if(this.websocket.readyState === this.websocket.CLOSED) {
+          return;
+        }
+
+        this.websocket.send(JSON.stringify({
+          uuid: subscriptionDetails.uuid,
+          torrent, mutationType
+        }));
+      });
     }
   }
 
