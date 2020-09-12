@@ -10,7 +10,7 @@
     "anitomyscript": "2.0.2",
     "deep-diff": "1.0.2",
     "moment": "2.24.0",
-    "node-fetch": "2.6.0",
+    "node-fetch": "2.6.1",
     "react": "16.9.0",
     "react-dom": "16.9.0",
     "react-router-dom": "5.0.1",
