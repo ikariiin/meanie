@@ -1,21 +1,21 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const applicationConfig = require('./config.json');
+import path = require('path');
+import HtmlWebpackPlugin = require('html-webpack-plugin');
+import applicationConfig = require('./config.json');
 
-module.exports = {
-  entry: [path.join(path.resolve(__dirname, 'src/ui/javascript'), 'mounter.tsx')],
+export default {
+  entry: [path.join(path.resolve(__dirname, 'src'), 'mounter.tsx')],
   output: {
     filename: 'app.bundle.js',
     chunkFilename: 'chunk-[name].bundle.js'
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(path.resolve(__dirname, 'src/ui/html'), 'index.html')
+      template: path.join(path.resolve(__dirname, 'src'), 'index.html')
     })
   ],
   module: {
     rules: [
-      { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+      { test: /\.tsx?$/, loader: "ts-loader" },
       {
         test: /\.scss$/,
         use: [{
