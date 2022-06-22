@@ -14,7 +14,7 @@
     "react": "16.9.0",
     "react-dom": "16.9.0",
     "react-router-dom": "5.0.1",
-    "sqlite3": "^5.0.0",
+    "sqlite3": "^5.0.3",
     "typeorm": "0.2.18",
     "uuid": "3.3.3",
     "webtorrent": "0.108.6",
